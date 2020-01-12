@@ -1,5 +1,6 @@
 import 'package:location/location.dart';
 import 'package:flutter/material.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 
 void main() => runApp(MyApp());
 
@@ -37,6 +38,15 @@ class MultiMap extends StatefulWidget {
 class _MultiMapState extends State<MultiMap> {
   @override
   Widget build(BuildContext context) {
+    final MapboxMap map = MapboxMap(
+      styleString: "mapbox://styles/akaivola/ck0v64jdp0eet1cqu0lpfq38g",
+      zoomGesturesEnabled: true,
+      initialCameraPosition: const CameraPosition(
+        target: LatLng(-33.852, 151.211),
+        zoom: 11.0,
+      ),
+    );
+
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         elevation: 4.0,
@@ -45,10 +55,27 @@ class _MultiMapState extends State<MultiMap> {
         backgroundColor: Colors.blue,
         onPressed: () async {
           final location = Location();
-          final hasPermissions = await location.hasPermission();
+          final hasPermissions = await location.serviceEnabled() && await location.hasPermission();
           if (!hasPermissions) {
             await location.requestPermission();
           }
+          location.changeSettings(
+            accuracy: LocationAccuracy.HIGH,
+            interval: 1000,
+            distanceFilter: 1
+          );
+          location.onLocationChanged().listen((LocationData currentLocation) {
+            if (currentLocation.accuracy > 10) {
+              location.changeSettings(
+                accuracy: LocationAccuracy.HIGH,
+                interval: 1000,
+                distanceFilter: currentLocation.accuracy + 2
+              );
+            }
+            print(currentLocation.accuracy);
+            print(currentLocation.latitude);
+            print(currentLocation.longitude);
+          });
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -68,29 +95,7 @@ class _MultiMapState extends State<MultiMap> {
           ],
         ),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-          ],
-        ),
-      ),
+      body: map,
     );
   }
 }
