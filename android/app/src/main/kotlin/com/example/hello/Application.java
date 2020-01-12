@@ -2,6 +2,7 @@ package com.example.hello;
 
 import com.lyokone.location.LocationPlugin;
 import io.flutter.app.FlutterApplication;
+import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
@@ -14,6 +15,7 @@ public class Application extends FlutterApplication implements PluginRegistry.Pl
 
     @Override
     public void registerWith(PluginRegistry registry) {
-        GeneratedPluginRegistrant.registerWith(registry);
+        GeneratedPluginRegistrant.registerWith((FlutterEngine) registry);
     }
+
 }
